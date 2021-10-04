@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Achievement;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -64,9 +65,9 @@ class AchievementsController extends Controller
 
     /**
      * @param $currentBadge
-     * @return string
+     * @return string|null
      */
-    public function nextBadge($currentBadge): string
+    public function nextBadge($currentBadge): ?string
     {
 
         $badge = DB::table('badge_rules')
@@ -75,7 +76,7 @@ class AchievementsController extends Controller
             ->where('sequence', '>', $currentBadge->sequence ?? '0')
             ->orderBy('sequence')
             ->first();
-        return $badge->title ?? '';
+        return $badge->title ?? null;
 
     }
 
@@ -88,6 +89,7 @@ class AchievementsController extends Controller
     {
         $totalAchievements = $user->achievements()->count();
         $nextRules = DB::table('badge_rules')
+            ->select('rule')
             ->when($totalAchievements == 0, function ($q) {
                 $q->where('rule', '=', 0);
             })->when($totalAchievements > 0, function ($q) use ($totalAchievements) {
@@ -96,6 +98,9 @@ class AchievementsController extends Controller
             ->orderBy('sequence')
             ->limit(1)
             ->first();
-        return $nextRules->rule - $totalAchievements;
+        $countTotal = Achievement::count();
+        if ($totalAchievements < $countTotal) return $nextRules->rule - $totalAchievements;
+        return 0;
+
     }
 }

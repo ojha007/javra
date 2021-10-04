@@ -38,15 +38,19 @@ class CommentWrittenListener implements ShouldQueue
             ->count(DB::raw('DISTINCT lesson_id'));
 
         $rule = DB::table('achievements_rules')
+            ->select('id')
             ->where('type', $event->type)
             ->where('rule', $commentCount)
             ->first();
+
         if ($rule) {
             $event
                 ->user
                 ->achievements()
                 ->updateOrCreate(['achievement_id' => $rule->id], ['achievement_id' => $rule->id]);
         }
+
+        //handling For fallback cases.
 
     }
 }
