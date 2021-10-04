@@ -17,13 +17,17 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         Lesson::factory()
-            ->count(40)
+            ->count(100)
             ->create();
         User::factory()
-            ->count(10)
+            ->count(20)
             ->create();
         User::updateOrCreate(
             ['email' => 'user@gmail.com'],
+            ['name' => 'User', 'password' => bcrypt('123456')
+            ]);
+        User::updateOrCreate(
+            ['email' => 'user1@gmail.com'],
             ['name' => 'User', 'password' => bcrypt('123456')
             ]);
 

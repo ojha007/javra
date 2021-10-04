@@ -18,7 +18,7 @@ class CreateLessonCommentsTable extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('lesson_id')->constrained('lessons');
-            $table->text('body');
+            $table->longText('body');
             $table->timestamps();
         });
     }

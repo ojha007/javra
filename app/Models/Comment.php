@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
-use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Comment extends Model
 {
     use HasFactory;
 
-    protected $table='lesson_comments';
+    protected $table = 'lesson_comments';
 
     /**
      * The attributes that are mass assignable.
@@ -19,9 +18,9 @@ class Comment extends Model
      * @var array
      */
     protected $fillable = [
+        'lesson_id',
         'body',
         'user_id',
-        'lesson_id'
     ];
 
     /**
@@ -30,5 +29,10 @@ class Comment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function lesson(): BelongsTo
+    {
+        return $this->belongsTo(Lesson::class);
     }
 }

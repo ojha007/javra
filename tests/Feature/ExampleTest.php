@@ -15,10 +15,10 @@ class ExampleTest extends TestCase
      *
      * @return void
      */
-    public function test_example()
+    public function test_user_achievements()
     {
         $user = User::factory()->create();
-        
+
         $response = $this->get("/users/{$user->id}/achievements");
 
         $response->assertStatus(200);

@@ -3,14 +3,12 @@
 namespace App\Listeners;
 
 use App\Events\CommentWritten;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\DB;
 
-class CommentWrittenListener implements ShouldQueue
+class CommentWrittenListener
 {
 
-    use InteractsWithQueue;
+//    use InteractsWithQueue;
 
 
     /**
@@ -37,6 +35,7 @@ class CommentWrittenListener implements ShouldQueue
             ->where('user_id', $event->user->id)
             ->count(DB::raw('DISTINCT lesson_id'));
 
+
         $rule = DB::table('achievements_rules')
             ->select('id')
             ->where('type', $event->type)
@@ -49,8 +48,6 @@ class CommentWrittenListener implements ShouldQueue
                 ->achievements()
                 ->updateOrCreate(['achievement_id' => $rule->id], ['achievement_id' => $rule->id]);
         }
-
-        //handling For fallback cases.
 
     }
 }
