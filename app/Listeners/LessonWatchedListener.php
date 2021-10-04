@@ -3,6 +3,10 @@
 namespace App\Listeners;
 
 use App\Events\LessonWatched;
+use App\Models\UserAchievement;
+use App\Repositories\AchievementsRepository;
+use App\Repositories\UserAchievementsRepository;
+use App\Services\ListenerHelpers;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\DB;
@@ -33,22 +37,13 @@ class LessonWatchedListener implements ShouldQueue
     public function handle(LessonWatched $event)
     {
 
-
+        $userId = $event->user->id;
         $watchCount = DB::table('lesson_user')
-            ->where('user_id', $event->user->id)
+            ->where('user_id', $userId)
             ->count(DB::raw('DISTINCT lesson_id'));
-
-        $rule = DB::table('achievements_rules')
-            ->where('type', $event->type)
-            ->where('rule', $watchCount)
-            ->first();
-
-        if ($rule) {
-            $event
-                ->user
-                ->achievements()
-                ->updateOrCreate(['achievement_id' => $rule->id], ['achievement_id' => $rule->id]);
-        }
-
+        $rules = (new ListenerHelpers())->getRuleCollection($event, $watchCount);
+        (new UserAchievementsRepository(new UserAchievement()))->createBulkAchievements($rules, $userId);
     }
+
+
 }

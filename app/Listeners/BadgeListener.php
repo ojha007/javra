@@ -2,15 +2,17 @@
 
 namespace App\Listeners;
 
+use App\Models\UserBadge;
+use App\Repositories\UserBadgeRepository;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\DB;
 
 
-class BadgeListener
+class BadgeListener implements ShouldQueue
 {
 
-//    use InteractsWithQueue;
+    use InteractsWithQueue;
 
     /**
      * Create the event listener.
@@ -31,25 +33,30 @@ class BadgeListener
     public function handle($event)
     {
 
+        $userId = $event->user->id;
         $countAchievement = DB::table('user_achievements')
-            ->where('user_id', $event->user->id)
+            ->where('user_id', $userId)
             ->count();
-        $defaultBadge = $event->user->badges()->count();
-        if ($defaultBadge==0) {
-            $badge = DB::table('badge_rules')
-                ->where('sequence', '=', 1)
-                ->first();
-            $event->user->badges()->create(['badge_id' => $badge->id]);
-        } else {
-            $badgeRule = DB::table('badge_rules')
-                ->where('rule', '=', $countAchievement)
-                ->first();
-            if ($badgeRule) {
-                $event
-                    ->user
-                    ->badges()
-                    ->updateOrCreate(['badge_id' => $badgeRule->id], ['badge_id' => $badgeRule->id]);
+
+        $rules = DB::table('badge_rules as br')
+            ->select('br.id as badge_id', 'br.title')
+            ->leftJoin('user_badges as ub', function ($q) use ($userId) {
+                $q->on('ub.badge_id', '=', 'br.id')
+                    ->where('ub.user_id', $userId);
+            })
+            ->where('br.rule', '<=', $countAchievement)
+            ->whereNull('ub.id')
+            ->orderBy('rule')
+            ->get();
+        if ($rules) {
+            $toSave = [];
+            foreach ($rules as $key => $rule) {
+                $toSave [$key] = [
+                    'badge_id' => $rule->badge_id,
+                    'user_id' => $userId
+                ];
             }
+            (new UserBadgeRepository(new UserBadge()))->bulkCreate($toSave);
         }
 
     }

@@ -12,7 +12,7 @@ class UserBadge extends Model
 
     protected $table = 'user_badges';
 
-    protected $fillable = ['user_id', 'badge_id'];
+    protected $fillable = ['user_id', 'badge_id','created_at','updated_at'];
 
     public function badgeRules(): BelongsTo
     {

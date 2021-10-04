@@ -35,7 +35,7 @@ class CommentController extends Controller
     {
         $attributes = $request->validated();
         try {
-            $attributes['user_id']=Auth::id();
+            $attributes['user_id'] = Auth::id();
             $comment = $this->repository->create($attributes);
             $this->repository->commentWritten($comment);
             return new SuccessResponse();

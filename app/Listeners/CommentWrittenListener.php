@@ -3,12 +3,17 @@
 namespace App\Listeners;
 
 use App\Events\CommentWritten;
+use App\Models\UserAchievement;
+use App\Repositories\UserAchievementsRepository;
+use App\Services\ListenerHelpers;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\DB;
 
-class CommentWrittenListener
+class CommentWrittenListener implements ShouldQueue
 {
 
-//    use InteractsWithQueue;
+    use InteractsWithQueue;
 
 
     /**
@@ -30,24 +35,19 @@ class CommentWrittenListener
      */
     public function handle(CommentWritten $event)
     {
+        $userId = $event->user->id;
+        try {
+            $commentCount = DB::table('lesson_comments')
+                ->where('user_id', $event->user->id)
+                ->count(DB::raw('DISTINCT lesson_id'));
+            $rules = (new ListenerHelpers())->getRuleCollection($event, $commentCount);
 
-        $commentCount = DB::table('lesson_comments')
-            ->where('user_id', $event->user->id)
-            ->count(DB::raw('DISTINCT lesson_id'));
-
-
-        $rule = DB::table('achievements_rules')
-            ->select('id')
-            ->where('type', $event->type)
-            ->where('rule', $commentCount)
-            ->first();
-
-        if ($rule) {
-            $event
-                ->user
-                ->achievements()
-                ->updateOrCreate(['achievement_id' => $rule->id], ['achievement_id' => $rule->id]);
+            (new UserAchievementsRepository(new UserAchievement()))->createBulkAchievements($rules, $userId);
+        } catch (\Exception $exception) {
+            dd($exception);
         }
 
+
     }
+
 }

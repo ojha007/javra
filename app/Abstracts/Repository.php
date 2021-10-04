@@ -171,4 +171,19 @@ abstract class Repository implements RepositoryInterface
             ->with($with)
             ->findOrFail($id);
     }
+
+    public function bulkCreate(array $attributes)
+    {
+
+        $fillable = $this->model->getFillable();
+        foreach ($attributes as $key => $attribute) {
+            if (!array_key_exists('created_at', $fillable))
+                $attributes[$key]['created_at'] = now();
+
+            if (!array_key_exists('updated_at', $fillable))
+                $attributes[$key]['updated_at'] = now();
+        }
+
+        return $this->model->insert($attributes);
+    }
 }
