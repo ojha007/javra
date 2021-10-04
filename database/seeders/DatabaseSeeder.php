@@ -17,10 +17,10 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         Lesson::factory()
-            ->count(20)
+            ->count(40)
             ->create();
         User::factory()
-            ->count(20)
+            ->count(10)
             ->create();
         User::updateOrCreate(
             ['email' => 'user@gmail.com'],
